@@ -396,7 +396,7 @@ export default function CardStream() {
 
             updateCardClipping() {
                 const scannerX = window.innerWidth / 2;
-                const scannerWidth = 8;
+                const scannerWidth = 0;
                 const scannerLeft = scannerX - scannerWidth / 2;
                 const scannerRight = scannerX + scannerWidth / 2;
                 let anyScanningActive = false;
