@@ -1014,37 +1014,9 @@ export default function CardStream() {
                 </h2>
             </div>
 
-            <div className="absolute top-20 left-6 flex gap-3 z-[100]">
-                <button className="control-btn" onClick={() => {
-                    // @ts-ignore
-                    if (window.cardStreamControllerInstance) {
-                        // @ts-ignore
-                        const isAnim = window.cardStreamControllerInstance.toggleAnimation();
-                        setIsAnimating(isAnim);
-                    }
-                }}>
-                    {isAnimating ? "⏸️ Pause" : "▶️ Play"}
-                </button>
-                <button className="control-btn" onClick={() => {
-                    // @ts-ignore
-                    if (window.cardStreamControllerInstance) {
-                        // @ts-ignore
-                        const isAnim = window.cardStreamControllerInstance.resetPosition();
-                        setIsAnimating(isAnim);
-                    }
-                }}>🔄 Reset</button>
-                <button className="control-btn" onClick={() => {
-                    // @ts-ignore
-                    if (window.cardStreamControllerInstance) {
-                        // @ts-ignore
-                        window.cardStreamControllerInstance.changeDirection();
-                    }
-                }}>↔️ Direction</button>
-            </div>
 
-            <div className="speed-indicator">
-                Speed: <span ref={speedIndicatorRef}>{speed}</span> px/s
-            </div>
+
+
 
             <div className="tc-container" ref={containerRef} id="cardStream">
                 <canvas id="particleCanvas" className="tc-particleCanvas"></canvas>
