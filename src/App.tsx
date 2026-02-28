@@ -277,13 +277,63 @@ const Future = () => {
   );
 };
 
+const COUNTRIES = [
+  { code: '+1', flag: '🇺🇸', name: 'USA' },
+  { code: '+44', flag: '🇬🇧', name: 'UK' },
+  { code: '+1', flag: '🇨🇦', name: 'Canada' },
+  { code: '+61', flag: '🇦🇺', name: 'Australia' },
+  { code: '+49', flag: '🇩🇪', name: 'Germany' },
+  { code: '+33', flag: '🇫🇷', name: 'France' },
+  { code: '+91', flag: '🇮🇳', name: 'India' },
+  { code: '+81', flag: '🇯🇵', name: 'Japan' },
+  { code: '+86', flag: '🇨🇳', name: 'China' },
+  { code: '+55', flag: '🇧🇷', name: 'Brazil' },
+  { code: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: '+34', flag: '🇪🇸', name: 'Spain' },
+  { code: '+39', flag: '🇮🇹', name: 'Italy' },
+  { code: '+7', flag: '🇷🇺', name: 'Russia' },
+  { code: '+27', flag: '🇿🇦', name: 'South Africa' },
+  { code: '+971', flag: '🇦🇪', name: 'UAE' },
+  { code: '+65', flag: '🇸🇬', name: 'Singapore' },
+  { code: '+82', flag: '🇰🇷', name: 'South Korea' },
+];
+
 const JoinMe = () => {
   const [formState, setFormState] = useState({ name: '', email: '', phone: '' });
+  const [countryCode, setCountryCode] = useState('+1');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const validatePhone = (phone: string) => {
+    // Only allow digits, spaces, and dashes
+    const cleanPhone = phone.replace(/[ \-]/g, '');
+    if (!/^\d+$/.test(cleanPhone)) {
+      return "Phone number must contain only digits";
+    }
+    if (cleanPhone.length < 7 || cleanPhone.length > 15) {
+      return "Please enter a valid phone number length";
+    }
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const error = validatePhone(formState.phone);
+    if (error) {
+      setPhoneError(error);
+      return;
+    }
+
+    setPhoneError(null);
     setStatus('loading');
+
+    // Combine country code and cleaned phone number
+    const finalPhone = `${countryCode}${formState.phone.replace(/[ \-]/g, '')}`;
+    const submissionData = {
+      ...formState,
+      phone: finalPhone
+    };
 
     try {
       const response = await fetch('https://services.leadconnectorhq.com/hooks/ugg4v4G1WJMtqGcWFUp5/webhook-trigger/d0f17af6-8f0f-46e8-b0fa-67084e1b94c4', {
@@ -291,7 +341,7 @@ const JoinMe = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify(submissionData),
       });
 
       if (response.ok) {
@@ -305,7 +355,6 @@ const JoinMe = () => {
       setStatus('error');
     }
 
-    // Reset success/error message after 5 seconds to allow another submission
     setTimeout(() => {
       setStatus(prevStatus => prevStatus === 'loading' ? 'loading' : 'idle');
     }, 5000);
@@ -394,14 +443,42 @@ const JoinMe = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-widest text-white/40 ml-1">Phone</label>
-              <input
-                type="tel"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500/50 transition-colors"
-                placeholder="+1 (555) 000-0000"
-                disabled={status === 'loading'}
-                value={formState.phone}
-                onChange={e => setFormState({ ...formState, phone: e.target.value })}
-              />
+              <div className="flex gap-3">
+                <div className="relative">
+                  <select
+                    className="appearance-none bg-white/5 border border-white/10 rounded-2xl px-4 py-4 pr-10 focus:outline-none focus:border-blue-500/50 transition-colors cursor-pointer text-sm"
+                    value={countryCode}
+                    disabled={status === 'loading'}
+                    onChange={e => setCountryCode(e.target.value)}
+                  >
+                    {COUNTRIES.map((c, i) => (
+                      <option key={i} value={c.code} className="bg-[#0f0f12] text-white">
+                        {c.flag} {c.code}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
+                    <ArrowRight size={14} className="rotate-90" />
+                  </div>
+                </div>
+                <input
+                  type="tel"
+                  required
+                  className={`flex-1 bg-white/5 border ${phoneError ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500/50 transition-colors`}
+                  placeholder="555-0000"
+                  disabled={status === 'loading'}
+                  value={formState.phone}
+                  onChange={e => {
+                    setFormState({ ...formState, phone: e.target.value });
+                    if (phoneError) setPhoneError(null);
+                  }}
+                />
+              </div>
+              {phoneError && (
+                <p className="text-[10px] text-rose-400 uppercase tracking-widest ml-1 animate-in fade-in slide-in-from-top-1">
+                  {phoneError}
+                </p>
+              )}
             </div>
 
             <AuroraButton
