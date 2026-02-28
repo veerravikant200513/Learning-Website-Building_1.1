@@ -279,12 +279,36 @@ const Future = () => {
 
 const JoinMe = () => {
   const [formState, setFormState] = useState({ name: '', email: '', phone: '' });
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setStatus('loading');
+
+    try {
+      const response = await fetch('https://services.leadconnectorhq.com/hooks/ugg4v4G1WJMtqGcWFUp5/webhook-trigger/d0f17af6-8f0f-46e8-b0fa-67084e1b94c4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formState),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormState({ name: '', email: '', phone: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setStatus('error');
+    }
+
+    // Reset success/error message after 5 seconds to allow another submission
+    setTimeout(() => {
+      setStatus(prevStatus => prevStatus === 'loading' ? 'loading' : 'idle');
+    }, 5000);
   };
 
   return (
@@ -351,6 +375,7 @@ const JoinMe = () => {
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500/50 transition-colors"
                 placeholder="Your name"
+                disabled={status === 'loading'}
                 value={formState.name}
                 onChange={e => setFormState({ ...formState, name: e.target.value })}
               />
@@ -362,6 +387,7 @@ const JoinMe = () => {
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500/50 transition-colors"
                 placeholder="your@email.com"
+                disabled={status === 'loading'}
                 value={formState.email}
                 onChange={e => setFormState({ ...formState, email: e.target.value })}
               />
@@ -372,6 +398,7 @@ const JoinMe = () => {
                 type="tel"
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500/50 transition-colors"
                 placeholder="+1 (555) 000-0000"
+                disabled={status === 'loading'}
                 value={formState.phone}
                 onChange={e => setFormState({ ...formState, phone: e.target.value })}
               />
@@ -379,13 +406,33 @@ const JoinMe = () => {
 
             <AuroraButton
               type="submit"
-              disabled={submitted}
-              className={submitted ? "bg-emerald-950 text-emerald-400 border-emerald-500/50" : ""}
-              glowClassName={submitted ? "from-emerald-400 via-green-500 to-emerald-600" : "from-blue-600 via-indigo-500 to-purple-600"}
+              disabled={status === 'loading' || status === 'success'}
+              className={
+                status === 'success'
+                  ? "bg-emerald-950 text-emerald-400 border-emerald-500/50"
+                  : status === 'error'
+                    ? "bg-rose-950 text-rose-400 border-rose-500/50"
+                    : ""
+              }
+              glowClassName={
+                status === 'success'
+                  ? "from-emerald-400 via-green-500 to-emerald-600"
+                  : status === 'error'
+                    ? "from-rose-400 via-red-500 to-rose-600"
+                    : "from-blue-600 via-indigo-500 to-purple-600"
+              }
             >
-              {submitted ? 'Message Sent' : 'Submit'}
-              {!submitted && <ArrowRight size={18} />}
+              {status === 'loading' ? 'Sending...' :
+                status === 'success' ? 'Message Sent' :
+                  status === 'error' ? 'Try Again' : 'Submit'}
+              {status === 'idle' && <ArrowRight size={18} />}
             </AuroraButton>
+
+            {status === 'error' && (
+              <p className="text-[10px] text-center text-rose-400 uppercase tracking-widest mt-2">
+                Something went wrong. Please try again later.
+              </p>
+            )}
 
             <p className="text-[10px] text-center text-white/50 uppercase tracking-widest mt-4">
               I’ll only use this to stay in touch—no spam.

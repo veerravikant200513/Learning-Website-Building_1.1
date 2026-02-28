@@ -3,12 +3,9 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 
-interface AuroraButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    className?: string;
-    children: React.ReactNode;
+type AuroraButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     glowClassName?: string;
-}
+};
 
 export function AuroraButton({
     className,
